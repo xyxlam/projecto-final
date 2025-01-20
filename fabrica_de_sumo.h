@@ -36,7 +36,7 @@ typedef struct {
     noTapete *inicio;
     noTapete *fim;
     int tamanho;        // Número atual de caixas no tapete
-}TapeteRolante
+}TapeteRolante;
 
 //No para a fila de Empilhamento
 typedef struct noFila {
