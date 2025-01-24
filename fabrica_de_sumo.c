@@ -8,7 +8,7 @@ TapeteRolante *criarTapete() {
     return tapete;
 }
 
-void inserirCaixa(TapeteRolante *tapete, Caixa *caixa) {
+void inserirCaixa(TapeteRolante *tapete, Caixa caixa) {
     no *novo = (no *)malloc(sizeof(no));
     novo->caixa = caixa;
     novo->prox = NULL;
@@ -25,11 +25,11 @@ void inserirCaixa(TapeteRolante *tapete, Caixa *caixa) {
 void validarCaixas(TapeteRolante *tapete, int *prejuizo) {
     no *atual = tapete->inicio;
     while (atual != NULL) {
-        if (atual->caixa->quantidade < MAX_GARRAFAS) {
-            *prejuizo += (MAX_GARRAFAS - atual->caixa->quantidade) * CUSTO_PRODUCAO;
-            atual->caixa->validada = 0;
+        if (atual->caixa.quantidade < MAX_GARRAFAS) {
+            *prejuizo += (MAX_GARRAFAS - atual->caixa.quantidade) * CUSTO_PRODUCAO_LARANJA;
+            atual->caixa.validada = 0;
         } else {
-            atual->caixa->validada = 1;
+            atual->caixa.validada = 1;
         }
         atual = atual->prox;
     }
@@ -53,8 +53,8 @@ void inverterTapete(TapeteRolante *tapete) {
 void etiquetarCaixas(TapeteRolante *tapete) {
     no *atual = tapete->inicio;
     while (atual != NULL) {
-        if (atual->caixa->validada) {
-            atual->caixa->etiquetada = 1;
+        if (atual->caixa.validada) {
+            atual->caixa.etiquetada = 1;
         }
         atual = atual->prox;
     }
@@ -96,28 +96,22 @@ Pilha *criarPilha(const char *sabor) {
 }
 
 void empilharCaixa(Fila *fila, Pilha *pilha) {
-    while (fila->tamanho > 0 && pilha->tamanho < MAX_PILHA) {
+    while (fila->tamanho > 0) {
         no *remover = fila->frente;
         fila->frente = fila->frente->prox;
 
-        noPilha *novoNo = (noPilha *)malloc(sizeof(noPilha));
-        if(!novoNo) {
-            fprintf(stderr, "Erro ao alocar memória para nó da pilha\n");
-            exit(EXIT_FAILURE);
-        }
-
+        noPilha *novoNo =(noPilha *)malloc(sizeof(noPilha));
         novoNo->caixa = remover->caixa;
-        novoNo->baixo = pilha->topo;
+        novoNo->prox = pilha->topo;
         pilha->topo = novoNo;
         pilha->tamanho++;
         pilha->empilhamentos++;
 
         fila->tamanho--;
         free(remover);
-
     }
     if (fila->frente == NULL) {
-        fila->tras == NULL;
+        fila->tras = NULL;
     }
 }
 
@@ -125,11 +119,7 @@ void empilharCaixa(Fila *fila, Pilha *pilha) {
 void imprimirEstado(TapeteRolante *tapete, Fila *fila, Pilha *pilhas[], int num_pilhas) {
     no *atual = tapete->inicio;
     while (atual != NULL) {
-        printf("Caixa: %s | Garrafas: %d | Validada: %d | Etiquetada: %d\n",
-               atual->caixa->sabor,
-               atual->caixa->quantidade,
-               atual->caixa->validada,
-               atual->caixa->etiquetada);
+        printf("Caixa: %s | Garrafas: %d | Validada: %d | Etiquetada: %d\n", atual->caixa.sabor, atual->caixa.quantidade, atual->caixa.validada, atual->caixa.etiquetada);
         atual = atual->prox;
     }
 
@@ -141,7 +131,7 @@ void imprimirEstado(TapeteRolante *tapete, Fila *fila, Pilha *pilhas[], int num_
     printf("\nEstado da Fila:\n");
     atual = fila->frente;
     while (atual != NULL) {
-        printf("Caixa: %s | Garrafas: %d\n", atual->caixa->sabor, atual->caixa->quantidade);
+        printf("Caixa: %s | Garrafas: %d\n", atual->caixa.sabor, atual->caixa.quantidade);
         atual = atual->prox;
     }
 }
@@ -178,7 +168,7 @@ void salvarFicheiro(TapeteRolante *tapete, const char *filename) {
         return;
     }
 
-    noTapete *atual = tapete->inicio;
+    no *atual = tapete->inicio;
     if (atual) {
         do {
             fprintf(ficheiro, "`%s` %d %d %d\n", atual->caixa.sabor, atual->caixa.quantidade, atual->caixa.validada, atual->caixa.etiquetada);
@@ -202,13 +192,13 @@ void carregarFicheiro(TapeteRolante *tapete, const char *filename) {
     char sabor[20];
     int quantidade, validada, etiquetada;
 
-    while (fscanf(ficheiro, "`%[^`]` %d %d %d\n", sabor, &quantidade, &validada, &etiquetada) == 4) {
+    while (fscanf(ficheiro, "%s %d %d %d\n", sabor, &quantidade, &validada, &etiquetada) == 4) {
         Caixa caixa;
         strcpy(caixa.sabor, sabor);
         caixa.quantidade = quantidade;
         caixa.validada = validada;
         caixa.etiquetada = etiquetada;
-        inserirCaixa(tapete, &caixa);
+        inserirCaixa(tapete, caixa);
     }
 
     fclose(ficheiro);
@@ -218,7 +208,7 @@ void carregarFicheiro(TapeteRolante *tapete, const char *filename) {
 //Fun;áo para validar e etiquetar uma caixa
 void validarCaixa(Caixa *caixa, int *contadorEtiqueta) {
     if (!caixa->validada) {
-        caixa->validada = true;
+        caixa->validada = 1;
         caixa->etiquetada = (*contadorEtiqueta)++;
     } else {
         printf("A caixa já está validada: Sabor %s, Etiqueta %d/n", caixa->sabor, caixa->etiquetada);
@@ -232,7 +222,7 @@ void validarTapete(TapeteRolante *tapete, int *contadorEtiqueta) {
         return;
     }
 
-    noTapete *atual = tapete->inicio;
+    no *atual = tapete->inicio;
     do {
         validarCaixa(&atual->caixa, contadorEtiqueta);
         atual = atual->prox;
@@ -242,51 +232,10 @@ void validarTapete(TapeteRolante *tapete, int *contadorEtiqueta) {
 // Criar uma nova pilha
 Pilha *criarPilha(char *sabor) {
     Pilha *pilha = (Pilha *)malloc(sizeof(Pilha));
-    pilha->topo = NULL;
-    pilha->tamanho = 0;
-    strcpy(pilha->sabor, sabor);
-    return pilha;
-}
-
-//Empilhar uma caixa na pilha correspondente ao sabor
-void empilharCaixa(Pilha *pilha, Caixa *caixa) {
-    if (strcmp(pilha->sabor, caixa->sabor)!= 0) {
-        printf("Erro: O sabor da caixa não corresponde ao da pilha.\n");
-        return;
+    if(!pilha) {
+        fprintf(stderr, "Erro ao alocar memória para a pilha\n");
+        exit(EXIT_FAILURE);
     }
-
-    noPilha *novo = (noPilha *)malloc(sizeof(noPilha));
-    novo->caixa = caixa;
-    novo->baixo = pilha->topo;
-    pilha->topo = novo;
-    pilha->tamanho++;
-    printf("Caixa empilhada: Sabor %s, Quantidade %d, Etiqueta %d\n", caixa->sabor, caixa->quantidade, caixa->etiquetada);
-}
-
-//Transferir caixas validada do tapete para a pilha correspondente
-void transferirCaixas(TapeteRolante *tapete, Pilha **pilhas, int numSabores) {
-    if (tapete->inicio == NULL) {
-        printf("O tapete está vazio. Nada para ser transferido.\n");
-        return;
-    }
-
-    noTapete *atual = tapete->inicio;
-    do {
-        if (atual->caixa.validada) {
-            // Procurar a pilha correspondente ao sabor
-            for (int i = 0; i < numSabores; i++) {
-                if (strcmp(pilhas[i]->sabor, atual->caixa.sabor) == 0) {
-                    empilharCaixa(pilhas[i], atual->caixa);
-                    break;
-                }
-            }
-        }
-        atual = atual->prox;
-    } while (atual != tapete->inicio);
-}
-
-Pilha *criarPilha(char *sabor) {
-    Pilha *pilha = (Pilha *)malloc(sizeof(Pilha));
     pilha->topo = NULL;
     pilha->tamanho = 0;
     strcpy(pilha->sabor, sabor);
@@ -301,11 +250,15 @@ void empilharCaixa(Pilha *pilha, Caixa *caixa) {
 }
 
 noPilha *novo = (noPilha *)malloc(sizeof(noPilha));
-novo->caixa = caixa;
-novo->baixo = pilha->topo;
+if(!novo) {
+    fprintf(stderr, "Erro ao alocar memória para o nó da pilha\n");
+    exit(EXIT_FAILURE);
+}
+
+novo->caixa = *caixa;
+novo->prox = pilha->topo;
 pilha->topo = novo;
 pilha->tamanho++;
-printf("Caixa empilhada: Sabor %s, Quantidade %d, Etiqueta %d\n", caixa->sabor, caixa->quantidade, caixa->etiquetada);
 }
 
 //Transferir caixas validadas do tapete para a pilha correspondente
@@ -315,17 +268,34 @@ void transferirParaPilha(TapeteRolante *tapete, Pilha **pilhas, int numSabores) 
         return;
     }
 
-    noTapete *atual = tapete->inicio;
+    no *atual = tapete->inicio;
+    no *anterior = NULL;
+
     do {
-        if (atual->caixa.validada) {
+        if(atual->caixa.validada) {
             // Procurar a pilha correspondente ao sabor
             for (int i = 0; i < numSabores; i++) {
                 if (strcmp(pilhas[i]->sabor, atual->caixa.sabor) == 0) {
-                    empilharCaixa(pilhas[i], atual->caixa);
+                    empilharCaixa(pilhas[i], &atual->caixa);
                     break;
                 }
             }
+
+            // Remover a caixa do tapete
+            if (anterior) {
+                anterior->prox = atual->prox;
+            } else {
+                tapete->inicio = atual->prox;
+            }
+
+            no *remover = atual;
+            atual = atual->prox;
+
+            free(remover);
+            tapete->tamanho--;
+        } else {
+            anterior = atual;
+            atual = atual->prox;
         }
-        atual = atual->prox;
     } while (atual != tapete->inicio);
 }

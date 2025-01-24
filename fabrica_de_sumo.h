@@ -4,13 +4,12 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <stdbool.h>
 
 //Constantes
 #define MAX_GARRAFAS 6
-#define MAX_PILHA 4
-#define PRECO_VENDA 400
-#define CUSTO_PRODUCAO 110 
+#define CUSTO_PRODUCAO_LARANJA 110
+#define CUSTO_PRODUCAO_ANANAS 110
+#define PRECO_VENDA_LARANJA 400
 
 //Estrutura para armazenar informações de uma caixa
 typedef struct Caixa {
@@ -20,82 +19,54 @@ typedef struct Caixa {
     int etiquetada;            // Número da etiqueta (se valida)
 }Caixa;
 
-//No para o tapete rolante circular
-typedef struct noTapete {
-    Caixa caixa;
-    struct noTapete *prox;
-}noTapete;
-
 typedef struct no {
-    Caixa *caixa;
+    Caixa caixa;
     struct no *prox;
 } no;
 
 //Estrutura para o tapete rolante circular
-typedef struct {
-    noTapete *inicio;
-    noTapete *fim;
+typedef struct TapeteRolante {
+    no *inicio;
+    no *fim;
     int tamanho;        // Número atual de caixas no tapete
 }TapeteRolante;
 
 //No para a fila de Empilhamento
-typedef struct noFila {
-    Caixa *caixa;
-    struct noFila *prox;
-} noFila;
-
-//Estrutura para a fila de Empilhamento
-typedef struct {
-    noFila *inicio;
-    noFila *fim;
-    int tamanho;        // Número atual de caixas na fila
-} noFila;
-
-// Estrutura para a filha de Empilhamento
-typedef struct {
-    noFila *frente;
-    noFila *tras;
-    int tamanho;        // Número atual de caixas na fila
-} Fila;
-
-//No para a pilha de caixas
 typedef struct noPilha {
-    Caixa *caixa;
-    struct noPilha *baixo;
-}noPilha;
+    Caixa caixa;
+    struct noPilha *prox;
+} noPilha;
 
-//Estrutura para a pilha
-typedef struct {
+typedef struct pilha{
     noPilha *topo;
-    char sabor[20];
+    char sabor [20];
     int tamanho;
     int empilhamentos;
-} Pilha;
+}Pilha;
 
-//Funções básicas
+typedef struct Fila {
+    no *frente;
+    no *tras;
+    int *tamanho;
+} Fila;
+
+// Prototipagem de funções
 TapeteRolante *criarTapete();
-Pilha *criarPilha(const char *sabor);
-
-//Operções no tapete rolante
 void inserirCaixa(TapeteRolante *tapete, Caixa caixa);
-Caixa *validarCaixas(TapeteRolante *tapete, int *prejuizo);
+void validarCaixas(TapeteRolante *tapete, int *prejuizo);
 void inverterTapete(TapeteRolante *tapete);
 void etiquetarCaixas(TapeteRolante *tapete);
-
-//Funções de validação
-void validarCaixa(Caixa *caixa, int *contadorEtiqueta);
-void validarTapete(TapeteRolante *tapete, int *contadorEtiqueta);
-
-//Funções de pilha
-void empilharCaixa(Pilha *pilha, Caixa *caixa);
-void transferirParaPilha(TapeteRolante *tapete, Pilha *pilha, int numSambores);
-
-//Funções de fila
 Fila *criarFila();
 void encaminharCaixas(TapeteRolante *tapete, Fila *fila, int *contador);
-
-// Funções gerais e de limpeza
+Pilha *criarPilha(const char *sabor);
+void empilharCaixa(Fila *fila, Pilha *pilha);
 void imprimirEstado(TapeteRolante *tapete, Fila *fila, Pilha *pilhas[], int num_pilhas);
 void finalizarSimulacao(TapeteRolante *tapete, Fila *fila, Pilha *pilhas[], int num_pilhas);
+void salvarFicheiro(TapeteRolante *tapete, const char *filename);
+void carregarFicheiro(TapeteRolante *tapete, const char *filename);
+void validarCaixa(Caixa *caixa, int *contadorEtiqueta);
+void validarTapete(TapeteRolante *tapete, int *contadorEtiqueta);
+void transferirCaixas(TapeteRolante *tapete, Pilha **pilhas, int numSabores);
+void transferirParaPilha(TapeteRolante *tapete, Pilha **pilhas, int numSabores);
 
 #endif
