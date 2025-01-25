@@ -86,14 +86,14 @@ void encaminharCaixas(TapeteRolante *tapete, Fila *fila, int *contador) {
     tapete->fim = NULL;
 }
 
-Pilha *criarPilha(const char *sabor) {
-    Pilha *pilha = (Pilha *)malloc(sizeof(Pilha));
-    pilha->topo = NULL;
-    strcpy(pilha->sabor, sabor);
-    pilha->tamanho = 0;
-    pilha->empilhamentos = 0;
-    return pilha;
-}
+// Pilha *criarPilha(const char *sabor) {
+//     Pilha *pilha = (Pilha *)malloc(sizeof(Pilha));
+//     pilha->topo = NULL;
+//     strcpy(pilha->sabor, sabor);
+//     pilha->tamanho = 0;
+//     pilha->empilhamentos = 0;
+//     return pilha;
+// }
 
 void empilharCaixa(Fila *fila, Pilha *pilha) {
     while (fila->tamanho > 0) {
@@ -243,7 +243,7 @@ Pilha *criarPilha(char *sabor) {
 }
 
 // Empilhar uma caixa na pilha correspondente ao sabor
-void empilharCaixa(Pilha *pilha, Caixa *caixa) {
+void empilharCaixaPorSabor(Pilha *pilha, Caixa *caixa) {
     if (strcmp(pilha->sabor, caixa->sabor) != 0) {
         printf("Erro: O sabor da caixa não corresponde ao da pilha.\n");
         return;
@@ -276,7 +276,7 @@ void transferirParaPilha(TapeteRolante *tapete, Pilha **pilhas, int numSabores) 
             // Procurar a pilha correspondente ao sabor
             for (int i = 0; i < numSabores; i++) {
                 if (strcmp(pilhas[i]->sabor, atual->caixa.sabor) == 0) {
-                    empilharCaixa(pilhas[i], &atual->caixa);
+                    empilharCaixaPorSabor(pilhas[i], &atual->caixa);
                     break;
                 }
             }
